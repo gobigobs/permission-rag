@@ -1,0 +1,269 @@
+{
+  "demo": [
+    {
+      "label": "1. ALLOWED \u2014 engineering doc, local-filesystem connector",
+      "user": "priya",
+      "question": "How do I deploy to production?",
+      "retrieved": [
+        "eng-deploy-runbook",
+        "eng-architecture"
+      ],
+      "sources": [
+        "local-filesystem",
+        "mock-enterprise"
+      ],
+      "answer": "To deploy to production, you need to merge your changes to the `main` branch and wait for the green build. Then, click the \"Promote to prod\" button in the deploy dashboard. If the error rates rise above 1%, the deployment will automatically roll back. If you need to manually rollback, you can do so by clicking \"Rollback\" and selecting the previous green build. The on-call engineer will be automatically paged if the canary fails twice in a row.",
+      "citations": [
+        "eng-deploy-runbook",
+        "eng-architecture"
+      ],
+      "mode": "ollama:qwen2.5:3b-instruct",
+      "abstained": false
+    },
+    {
+      "label": "2. DENIED \u2014 exec-only doc must never appear",
+      "user": "priya",
+      "question": "What are the executive compensation bands for directors?",
+      "retrieved": [
+        "eng-architecture",
+        "all-holiday-calendar",
+        "eng-deploy-runbook"
+      ],
+      "sources": [
+        "mock-enterprise",
+        "local-filesystem",
+        "local-filesystem"
+      ],
+      "answer": "I don't know \u2014 nothing in the documents you are allowed to see answers this question confidently.",
+      "citations": [
+        "eng-architecture",
+        "all-holiday-calendar",
+        "eng-deploy-runbook"
+      ],
+      "mode": "abstained",
+      "abstained": true
+    },
+    {
+      "label": "3. CROSS-CONNECTOR \u2014 local-filesystem + mock-enterprise",
+      "user": "arjun",
+      "question": "What needs finance approval \u2014 expense claims or vendor contracts?",
+      "retrieved": [
+        "fin-expense-policy",
+        "fin-vendor-contracts",
+        "fin-q3-budget"
+      ],
+      "sources": [
+        "local-filesystem",
+        "mock-enterprise",
+        "local-filesystem"
+      ],
+      "answer": "Expense claims above Rs 10,000 need finance approval. Vendor contracts above Rs 2 lakh a year need finance approval before signing.",
+      "citations": [
+        "fin-expense-policy",
+        "fin-vendor-contracts",
+        "fin-q3-budget"
+      ],
+      "mode": "ollama:qwen2.5:3b-instruct",
+      "abstained": false
+    },
+    {
+      "label": "4. PUBLIC \u2014 an 'all' doc, visible to every role",
+      "user": "meera",
+      "question": "When is Diwali a holiday in 2026?",
+      "retrieved": [
+        "all-holiday-calendar",
+        "all-remote-work-policy",
+        "hr-leave-policy"
+      ],
+      "sources": [
+        "local-filesystem",
+        "mock-enterprise",
+        "local-filesystem"
+      ],
+      "answer": "Diwali in 2026 falls on 8 Nov, which is a holiday for the company.",
+      "citations": [
+        "all-holiday-calendar",
+        "all-remote-work-policy",
+        "hr-leave-policy"
+      ],
+      "mode": "ollama:qwen2.5:3b-instruct",
+      "abstained": false
+    }
+  ],
+  "acl_proof": {
+    "denied_doc": "exec-comp-review",
+    "leaks": [],
+    "passed": true
+  },
+  "eval": {
+    "n_questions": 10,
+    "n_scored": 10,
+    "n_abstained": 0,
+    "context_recall@3": 1.0,
+    "mean_faithfulness": 1.0,
+    "mean_answer_relevancy": 0.522
+  },
+  "eval_rows": [
+    {
+      "id": 1,
+      "user": "priya",
+      "question": "How do I deploy to production?",
+      "expected_doc": "eng-deploy-runbook",
+      "retrieved_docs": [
+        "eng-deploy-runbook",
+        "eng-deploy-runbook",
+        "eng-architecture"
+      ],
+      "context_recall@3": 1,
+      "faithfulness": 1.0,
+      "answer_relevancy": 0.466,
+      "abstained": false,
+      "answer": "Deploy Runbook \u2014 Shipping to Production\n\nDeploys happen through the CI pipeline only \u2014 never deploy from a laptop. Merge to `main`, wait for the green build, then click **Promote to prod** in\nthe deploy dashboard."
+    },
+    {
+      "id": 2,
+      "user": "priya",
+      "question": "How do I set up my dev environment on day one?",
+      "expected_doc": "eng-onboarding",
+      "retrieved_docs": [
+        "eng-onboarding",
+        "all-holiday-calendar",
+        "eng-deploy-runbook"
+      ],
+      "context_recall@3": 1,
+      "faithfulness": 1.0,
+      "answer_relevancy": 0.608,
+      "abstained": false,
+      "answer": "Engineering Onboarding \u2014 Dev Environment Setup\n\nNew engineers set up their laptop on day one. Every service runs locally with `docker compose up`."
+    },
+    {
+      "id": 3,
+      "user": "priya",
+      "question": "How does the canary rollout work?",
+      "expected_doc": "eng-architecture",
+      "retrieved_docs": [
+        "eng-deploy-runbook",
+        "all-remote-work-policy",
+        "eng-architecture"
+      ],
+      "context_recall@3": 1,
+      "faithfulness": 1.0,
+      "answer_relevancy": 0.476,
+      "abstained": false,
+      "answer": "The rollout is canary-first: 5% of traffic for 10\nminutes, then 50%, then 100%. Deploys go through the CI pipeline with a canary rollout: 5% of traffic for 10 minutes, then 50%, then 100%."
+    },
+    {
+      "id": 4,
+      "user": "arjun",
+      "question": "What is the approval limit for expense claims?",
+      "expected_doc": "fin-expense-policy",
+      "retrieved_docs": [
+        "fin-expense-policy",
+        "fin-vendor-contracts",
+        "all-remote-work-policy"
+      ],
+      "context_recall@3": 1,
+      "faithfulness": 1.0,
+      "answer_relevancy": 0.498,
+      "abstained": false,
+      "answer": "Expense claims above Rs 10,000 need finance approval. Submit claims in the expense tool within 30 days of spending, with a receipt\nfor anything over Rs 500."
+    },
+    {
+      "id": 5,
+      "user": "arjun",
+      "question": "Which vendor contracts need finance approval before signing?",
+      "expected_doc": "fin-vendor-contracts",
+      "retrieved_docs": [
+        "fin-vendor-contracts",
+        "fin-q3-budget",
+        "fin-expense-policy"
+      ],
+      "context_recall@3": 1,
+      "faithfulness": 1.0,
+      "answer_relevancy": 0.573,
+      "abstained": false,
+      "answer": "Contracts above Rs 2 lakh a year need finance approval before signing, and contracts above Rs 10 lakh a year need the CFO's sign-off. Vendor contracts above\nRs 2 lakh a year must go through the vendor review process before signing."
+    },
+    {
+      "id": 6,
+      "user": "arjun",
+      "question": "What is the Q3 budget allocation for engineering?",
+      "expected_doc": "fin-q3-budget",
+      "retrieved_docs": [
+        "fin-q3-budget",
+        "all-remote-work-policy",
+        "fin-expense-policy"
+      ],
+      "context_recall@3": 1,
+      "faithfulness": 1.0,
+      "answer_relevancy": 0.474,
+      "abstained": false,
+      "answer": "Q3 Budget \u2014 Department Allocations\n\nThe Q3 budget totals Rs 1.2 crore across departments. Engineering gets\nRs 45 lakh, Sales Rs 30 lakh, Marketing Rs 25 lakh, and Operations\nRs 20 lakh."
+    },
+    {
+      "id": 7,
+      "user": "meera",
+      "question": "How many days of annual leave do employees get?",
+      "expected_doc": "hr-leave-policy",
+      "retrieved_docs": [
+        "hr-leave-policy",
+        "hr-leave-policy",
+        "all-holiday-calendar"
+      ],
+      "context_recall@3": 1,
+      "faithfulness": 1.0,
+      "answer_relevancy": 0.431,
+      "abstained": false,
+      "answer": "Leave Policy \u2014 Annual, Sick and Parental Leave\n\nEvery employee gets 21 days of annual leave, 12 days of sick leave, and\n10 public holidays per year. Annual leave needs manager approval at least\n7 days in advance; sick leave just needs a message to your manager on the\nday itself."
+    },
+    {
+      "id": 8,
+      "user": "meera",
+      "question": "When are performance reviews held and what are the ratings?",
+      "expected_doc": "hr-performance-review",
+      "retrieved_docs": [
+        "hr-performance-review",
+        "all-holiday-calendar",
+        "hr-leave-policy"
+      ],
+      "context_recall@3": 1,
+      "faithfulness": 1.0,
+      "answer_relevancy": 0.52,
+      "abstained": false,
+      "answer": "Performance reviews run twice a year, in April and October. Managers write a review, employees add a self-review, and ratings are calibrated in a meeting with HR."
+    },
+    {
+      "id": 9,
+      "user": "vikram",
+      "question": "What is the 2026 revenue target in the growth plan?",
+      "expected_doc": "exec-strategy-2026",
+      "retrieved_docs": [
+        "exec-strategy-2026",
+        "all-holiday-calendar",
+        "all-remote-work-policy"
+      ],
+      "context_recall@3": 1,
+      "faithfulness": 1.0,
+      "answer_relevancy": 0.613,
+      "abstained": false,
+      "answer": "The 2026 growth plan targets Rs 5 crore in revenue, up from Rs 3.1 crore in 2025. The plan has three bets: expand the Salem shop to a second location, launch a catering line for corporate clients, and grow the online ordering share to 40% of sales."
+    },
+    {
+      "id": 10,
+      "user": "priya",
+      "question": "What days is the office closed for Diwali in 2026?",
+      "expected_doc": "all-holiday-calendar",
+      "retrieved_docs": [
+        "all-holiday-calendar",
+        "all-remote-work-policy",
+        "eng-architecture"
+      ],
+      "context_recall@3": 1,
+      "faithfulness": 1.0,
+      "answer_relevancy": 0.566,
+      "abstained": false,
+      "answer": "The office is closed on these days. Holiday Calendar 2026\n\nCompany holidays in 2026: New Year's Day (1 Jan), Pongal (14\u201316 Jan),\nRepublic Day (26 Jan), Holi (3 Mar), Good Friday (3 Apr), Tamil New Year\n(14 Apr), May Day (1 May), Independence Day (15 Aug), Ganesh Chaturthi\n(14 Sep), Gandhi Jayanti (2 Oct), Diwali (8 Nov), and Christmas (25 Dec)."
+    }
+  ],
+  "dense_backend": "hashed"
+}

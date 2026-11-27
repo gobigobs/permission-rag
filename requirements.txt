@@ -1,0 +1,9 @@
+# permission-rag: zero required dependencies.
+# Everything (BM25, hashed dense embeddings, RRF, eval, demo) is pure
+# Python 3.12 stdlib, so `./run.sh` works with no install step.
+#
+# Optional: none. If a local Ollama server is running with
+# qwen2.5:3b-instruct, answers come from that model; otherwise the
+# extractive fallback runs. If it also has nomic-embed-text, dense
+# retrieval uses real Ollama embeddings instead of hashed ones.
+# No pip install is needed for the demo.

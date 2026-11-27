@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<title>permission-rag — demo results</title>
+<style>
+body{font-family:system-ui,sans-serif;max-width:900px;margin:24px auto;
+padding:0 16px;color:#1a1a1a;background:#fff;line-height:1.5}
+h1{font-size:26px} h2{font-size:18px;margin:0 0 8px}
+.card{border:1px solid #ddd;border-radius:10px;padding:16px;margin:14px 0}
+.answer{background:#f6f8fa;border-radius:6px;padding:10px}
+.pass{color:#0a7d2c;font-weight:700} .pill{display:inline-block;
+background:#eef2ff;border-radius:999px;padding:2px 10px;margin-right:6px}
+table{border-collapse:collapse;width:100%}
+td,th{border:1px solid #ddd;padding:6px 8px;text-align:left;font-size:14px}
+th{background:#f6f8fa} .note{color:#555;font-size:14px}
+</style></head><body>
+<h1>permission-rag — Permission-Aware Enterprise RAG</h1>
+<p>Demo results (real output of <code>./run.sh</code>). 12 docs from 2 connectors,
+hybrid BM25 + dense retrieval (RRF), ACL pre-filter at retrieval time,
+cited answers. Dense backend: <b>hashed</b>.</p>
+<p><span class="pill">local-filesystem: 6 docs</span>
+<span class="pill">mock-enterprise: 6 docs</span>
+<span class="pill">ACL proof: <span class="pass">PASS</span></span></p>
+
+    <section class="card">
+      <h2>1. ALLOWED — engineering doc, local-filesystem connector</h2>
+      <p><b>User:</b> priya &nbsp; <b>Q:</b> How do I deploy to production?</p>
+      <p><b>Retrieved:</b> eng-deploy-runbook [local-filesystem], eng-architecture [mock-enterprise]</p>
+      <p class="answer"><b>A:</b> To deploy to production, you need to merge your changes to the `main` branch and wait for the green build. Then, click the &quot;Promote to prod&quot; button in the deploy dashboard. If the error rates rise above 1%, the deployment will automatically roll back. If you need to manually rollback, you can do so by clicking &quot;Rollback&quot; and selecting the previous green build. The on-call engineer will be automatically paged if the canary fails twice in a row.</p>
+      <p><b>Citations:</b> eng-deploy-runbook, eng-architecture
+         &nbsp; <b>Mode:</b> ollama:qwen2.5:3b-instruct
+         &nbsp; <b>Abstained:</b> False</p>
+    </section>
+    <section class="card">
+      <h2>2. DENIED — exec-only doc must never appear</h2>
+      <p><b>User:</b> priya &nbsp; <b>Q:</b> What are the executive compensation bands for directors?</p>
+      <p><b>Retrieved:</b> eng-architecture [mock-enterprise], all-holiday-calendar [local-filesystem], eng-deploy-runbook [local-filesystem]</p>
+      <p class="answer"><b>A:</b> I don&#x27;t know — nothing in the documents you are allowed to see answers this question confidently.</p>
+      <p><b>Citations:</b> eng-architecture, all-holiday-calendar, eng-deploy-runbook
+         &nbsp; <b>Mode:</b> abstained
+         &nbsp; <b>Abstained:</b> True</p>
+    </section>
+    <section class="card">
+      <h2>3. CROSS-CONNECTOR — local-filesystem + mock-enterprise</h2>
+      <p><b>User:</b> arjun &nbsp; <b>Q:</b> What needs finance approval — expense claims or vendor contracts?</p>
+      <p><b>Retrieved:</b> fin-expense-policy [local-filesystem], fin-vendor-contracts [mock-enterprise], fin-q3-budget [local-filesystem]</p>
+      <p class="answer"><b>A:</b> Expense claims above Rs 10,000 need finance approval. Vendor contracts above Rs 2 lakh a year need finance approval before signing.</p>
+      <p><b>Citations:</b> fin-expense-policy, fin-vendor-contracts, fin-q3-budget
+         &nbsp; <b>Mode:</b> ollama:qwen2.5:3b-instruct
+         &nbsp; <b>Abstained:</b> False</p>
+    </section>
+    <section class="card">
+      <h2>4. PUBLIC — an &#x27;all&#x27; doc, visible to every role</h2>
+      <p><b>User:</b> meera &nbsp; <b>Q:</b> When is Diwali a holiday in 2026?</p>
+      <p><b>Retrieved:</b> all-holiday-calendar [local-filesystem], all-remote-work-policy [mock-enterprise], hr-leave-policy [local-filesystem]</p>
+      <p class="answer"><b>A:</b> Diwali in 2026 falls on 8 Nov, which is a holiday for the company.</p>
+      <p><b>Citations:</b> all-holiday-calendar, all-remote-work-policy, hr-leave-policy
+         &nbsp; <b>Mode:</b> ollama:qwen2.5:3b-instruct
+         &nbsp; <b>Abstained:</b> False</p>
+    </section>
+<h2>ACL enforcement proof</h2>
+<p>Denied doc <code>exec-comp-review</code> (exec-only) never appears in
+retrieval, citations or answers for priya / arjun / meera. Visible doc counts —
+priya (engineering) 5, arjun (finance) 5, meera (hr) 4, vikram (exec) 4 of 12 total.
+The pre-filter runs <i>before</i> ranking: denied docs are not in that user's
+retriever index at all.</p>
+<h2>RAGAS-style eval (10 questions — heuristic proxies, indicative only)</h2>
+<table><tr><th>id</th><th>user</th><th>recall@3</th><th>faithfulness</th>
+<th>relevancy</th><th>abstained</th><th>expected doc</th></tr>
+<tr><td>1</td><td>priya</td><td>1</td><td>1.0</td><td>0.466</td><td>False</td><td>eng-deploy-runbook</td></tr>
+<tr><td>2</td><td>priya</td><td>1</td><td>1.0</td><td>0.608</td><td>False</td><td>eng-onboarding</td></tr>
+<tr><td>3</td><td>priya</td><td>1</td><td>1.0</td><td>0.476</td><td>False</td><td>eng-architecture</td></tr>
+<tr><td>4</td><td>arjun</td><td>1</td><td>1.0</td><td>0.498</td><td>False</td><td>fin-expense-policy</td></tr>
+<tr><td>5</td><td>arjun</td><td>1</td><td>1.0</td><td>0.573</td><td>False</td><td>fin-vendor-contracts</td></tr>
+<tr><td>6</td><td>arjun</td><td>1</td><td>1.0</td><td>0.474</td><td>False</td><td>fin-q3-budget</td></tr>
+<tr><td>7</td><td>meera</td><td>1</td><td>1.0</td><td>0.431</td><td>False</td><td>hr-leave-policy</td></tr>
+<tr><td>8</td><td>meera</td><td>1</td><td>1.0</td><td>0.52</td><td>False</td><td>hr-performance-review</td></tr>
+<tr><td>9</td><td>vikram</td><td>1</td><td>1.0</td><td>0.613</td><td>False</td><td>exec-strategy-2026</td></tr>
+<tr><td>10</td><td>priya</td><td>1</td><td>1.0</td><td>0.566</td><td>False</td><td>all-holiday-calendar</td></tr></table>
+<p class="note">Aggregate: context recall@3 <b>1.0</b>,
+mean faithfulness <b>1.0</b>,
+mean answer relevancy <b>0.522</b>.
+Faithfulness / relevancy here are cheap heuristic proxies (content-word
+overlap / hashed-embedding cosine), NOT real RAGAS LLM-judge scores — see
+the README limitations section. Eval answers use the extractive fallback
+for determinism.</p>
+</body></html>
